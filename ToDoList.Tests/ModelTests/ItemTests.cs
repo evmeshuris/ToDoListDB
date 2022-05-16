@@ -1,4 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using MySql.Data.MySqlClient;
 using System.Collections.Generic;
 using ToDoList.Models;
 using System;
@@ -13,10 +14,14 @@ namespace ToDoList.Tests
     {
       Item.ClearAll();
     }
-
+    public ItemTests()
+    {
+      DBConfiguration.ConnectionString = "server=localhost;user id=root;password=epicodus;port=3306;database=to_do_list_test;";
+    }
     [TestMethod]
     public void ItemConstructor_CreatesInstanceOfItem_Item()
     {
+
       Item newItem = new Item("test");
       Assert.AreEqual(typeof(Item), newItem.GetType());
     }
@@ -67,18 +72,60 @@ namespace ToDoList.Tests
     [TestMethod]
     public void GetAll_ReturnsItems_ItemList()
     {
+
       //Arrange
       string description01 = "Walk the dog";
       string description02 = "Wash the dishes";
       Item newItem1 = new Item(description01);
       Item newItem2 = new Item(description02);
       List<Item> newList = new List<Item> { newItem1, newItem2 };
+      newItem1.Save();
+      newItem2.Save();
 
       //Act
       List<Item> result = Item.GetAll();
 
       //Assert
       CollectionAssert.AreEqual(newList, result);
+
+    }
+    [TestMethod]
+    public void Equals_ReturnsTrueIfDescriptionsAreTheSame_Item()
+    {
+      // Arrange, Act
+      Item firstItem = new Item("Mow the lawn");
+      Item secondItem = new Item("Mow the lawn");
+      
+
+      // Assert
+      Assert.AreEqual(firstItem, secondItem);
+    }
+    [TestMethod]
+    public void Save_SavesToDatabase_ItemList()
+    {
+      //Arrange
+      Item testItem = new Item("Mow the lawn");
+
+      //Act
+      testItem.Save();
+      List<Item> result = Item.GetAll();
+      List<Item> testList = new List<Item>{testItem};
+
+      //Assert
+      CollectionAssert.AreEqual(testList, result);
+    }
+    [TestMethod]
+    public void Find_ReturnsCorrectItemFromDatabase_Item()
+    {
+      //Arrange
+      Item newItem = new Item("Mow the lawn");
+      newItem.Save();
+      Item newItem2 = new Item("Wash dishes");
+      newItem2.Save();
+      //Act
+      Item foundItem = Item.Find(newItem.Id);
+      //Assert
+      Assert.AreEqual(newItem, foundItem);
     }
   }
 }
